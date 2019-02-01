@@ -153,7 +153,7 @@ namespace gameserver
             #endregion
         }
 
-        static object FileDelete_lock;
+        static object FileDelete_lock = new object();
 
         async Task CopyStreamAsync(Stream source, Stream dest, FileStream file = null)
         {
