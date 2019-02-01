@@ -17,9 +17,21 @@ namespace gameserver
             Raw = new byte[length];
         }
 
-        protected void AddMember(string name, int offset, int length, Type type)
+        protected void AddMember(string name, int offset, int length, Type type, Object obj = null)
         {
             members.Add(name, new Tuple<int, int, Type>(offset, length, type));
+            if (obj != null)
+            {
+                setObj(obj, offset, length);
+            }
+        }
+
+        void setObj(object obj,int offset,int length)
+        {
+            byte[] buffer = StructToBytes(obj);
+            Buffer.BlockCopy(buffer, 0, Raw, offset, length);
+            if (buffer.Length > length)
+                Console.WriteLine("object length bigger than byte array");
         }
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
@@ -48,10 +60,7 @@ namespace gameserver
             {
                 int offset = members[binder.Name].Item1;
                 int length = members[binder.Name].Item2;
-                byte[] buffer = StructToBytes(value);
-                Buffer.BlockCopy(buffer, 0, Raw, offset, length);
-                if (buffer.Length > length)
-                    Console.WriteLine("object length bigger than byte array");
+                setObj(value, offset, length);
                 return true;
             }
             else
