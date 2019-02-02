@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -65,7 +66,7 @@ namespace gameserver
             }
             else
             {
-                byte[] buffer = StructToBytes(obj);
+                byte[] buffer = ConverOrder(StructToBytes(obj));
                 Buffer.BlockCopy(buffer, 0, Raw, offset, length);
                 if (buffer.Length > length)
                     Console.WriteLine("object length bigger than byte array");
@@ -88,7 +89,10 @@ namespace gameserver
                 }
                 else
                 {
-                    result = BytesToStruct(Raw, type, offset);
+                    byte[] buffer = new byte[length];
+                    Buffer.BlockCopy(Raw, offset, buffer, 0, length);
+                    buffer = ConverOrder(buffer);
+                    result = BytesToStruct(buffer, type);
                 }
                 return true;
             }
@@ -124,10 +128,15 @@ namespace gameserver
             return bytes;
         }
 
-        public static Object BytesToStruct(byte[] bytes, Type StructStyle, int offset = 0)
+        public static Object BytesToStruct(byte[] bytes, Type StructStyle)
         {
-            IntPtr arrPtr = Marshal.UnsafeAddrOfPinnedArrayElement(bytes, offset);
+            IntPtr arrPtr = Marshal.UnsafeAddrOfPinnedArrayElement(bytes, 0);
             return Marshal.PtrToStructure(arrPtr, StructStyle);
+        }
+
+        public static byte[] ConverOrder(byte[] data)
+        {
+            return data.Reverse().ToArray();
         }
     }
 }
